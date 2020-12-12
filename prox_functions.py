@@ -2,6 +2,9 @@ import numpy as np
 import scipy.optimize as opt
 from tqdm import tqdm
 
+# Proximal operator of the L1 norm
+prox_L1 = lambda theta, gamma: np.sign(theta)*np.maximum(np.abs(theta)-gamma, 0.)
+
 def prox(theta, gamma, g, t0=None, method='BFGS', grad_g=None):
     '''
     Proximal operator of gamma*g at point theta.
@@ -34,7 +37,7 @@ def prox(theta, gamma, g, t0=None, method='BFGS', grad_g=None):
         t0 = theta
     return opt.minimize(fun, t0, method=method, jac=jac)
 
-def proximal_gradient(grad_f, g, theta0, gamma=1., niter=100, prox_g=None, method='BFGS', grad_g=None):
+def proximal_gradient(grad_f, g, theta0, gamma=1., lambda_=1., niter=100, prox_g=None, method='BFGS', grad_g=None):
     '''
     Proximal gradient algorithm.
 
@@ -48,6 +51,8 @@ def proximal_gradient(grad_f, g, theta0, gamma=1., niter=100, prox_g=None, metho
         Initial guess.
     gamma : float or ndarray, shape (m,), optional
         Proximal step size. The default is 1..
+    lambda_ : float or ndarray, shape (m,), optional
+        Multiplicating factor applied to g.
     niter : int, optional
         Number of iterations. The default is 100.
     prox_g : callable, optional
@@ -71,8 +76,10 @@ def proximal_gradient(grad_f, g, theta0, gamma=1., niter=100, prox_g=None, metho
     theta[0] = theta0
     if np.isscalar(gamma):
         gamma = np.ones(niter)*gamma
+    if np.isscalar(lambda_):
+        lambda_ = np.ones(niter)*lambda_
     if prox_g is None:
         prox_g = lambda theta, gamma: prox(theta, gamma, g, method=method, grad_g=grad_g).x
     for n in tqdm(range(niter)):
-        theta[n+1] = prox_g(theta[n]-gamma[n]*grad_f(theta[n]), gamma[n])
+        theta[n+1] = prox_g(theta[n]-gamma[n]*grad_f(theta[n]), lambda_[n]*gamma[n])
     return theta
