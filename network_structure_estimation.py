@@ -1,6 +1,10 @@
 import numpy as np
+from scipy.special import logsumexp
+
 from utils import vec2mat
 from prox_functions import prox_L1, proximal_gradient
+
+np.random.seed(1)
 
 M = 20 # number of possible states
 p = 50 # dimension
@@ -28,12 +32,31 @@ def barB(x):
         mat[k+1:, k] = elems
     return mat
 
-def logf(x):
-    ''' Returns log f(x) + C '''
-    mat = np.diag(np.diag(B0(x)))
+def logf(x, theta):
+    ''' log f(x) + log Z '''
+    mat = np.diag(B0(x))
     for k in range(p):
         mat[k+1:, k] = B(x[k], x[k+1:])
     return np.sum(theta*mat)
+
+def condf(x, i, theta):
+    ''' Compute p(x_i|x_-i) for all x_i '''
+    all_x = np.tile(x, (M, 1))
+    all_x[:, i] = np.arange(M)
+    all_logfx = np.array([logf(x, theta) for x in all_x])
+    return all_logfx-logsumexp(all_logfx)
+
+def Gibbsf(theta, niter=100):
+    ''' Gibbs sampler to sample from f '''
+    sample_space = np.arange(M)
+    x = np.zeros(p)
+    for it in range(niter):
+        for i in range(p):
+            x[i] = np.random.choice(sample_space, p=np.exp(condf(x, i, theta)))
+    return x
+
+def grad_f(theta, m=500, cov_prop=np.ones(p), size=100):
+    return 0
 
 grad_f ? # implement a Gibbs sampler
 
