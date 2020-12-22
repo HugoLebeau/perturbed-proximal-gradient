@@ -2,7 +2,7 @@ import numpy as np
 
 def mat2vec(mat):
     '''
-    Transforms a symmetric matrix into its vector representation.
+    Transform a symmetric matrix into its vector representation.
 
     Parameters
     ----------
@@ -26,7 +26,7 @@ def mat2vec(mat):
 
 def vec2mat(vec):
     '''
-    Transforms a vectorized symmetric matrix into its matrix form.
+    Transform a vectorized symmetric matrix into its matrix form.
 
     Parameters
     ----------
