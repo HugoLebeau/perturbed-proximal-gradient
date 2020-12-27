@@ -11,13 +11,13 @@ def prox(theta, gamma, g, t0=None, method='BFGS', grad_g=None):
 
     Parameters
     ----------
-    theta : float or ndarray, shape (n,)
+    theta : float or ndarray, shape (d,)
         Point where to compute the proximal operator.
     gamma : float
         Scaling parameter.
     g : callable
         Function whose proximal operator is to be computed.
-    t0 : float or ndarray, shape (n,), optional
+    t0 : float or ndarray, shape (d,), optional
         Initial guess. If None, set to theta. The default is None.
     method : str or callable, optional
         Type of solver (see scipy.optimize.minimize). The default is 'BFGS'.
@@ -47,11 +47,11 @@ def proximal_gradient(grad_f, g, theta0, gamma=1., lambda_=1., niter=100, prox_g
         Method for computing the gradient of f.
     g : callable
         Method for computing g.
-    theta0 : float or ndarray, shape (n,)
+    theta0 : float or ndarray, shape (d,)
         Initial guess.
-    gamma : float or ndarray, shape (m,), optional
+    gamma : float or ndarray, shape (n,), optional
         Proximal step size. The default is 1..
-    lambda_ : float or ndarray, shape (m,), optional
+    lambda_ : float or ndarray, shape (n,), optional
         Multiplicating factor applied to g.
     niter : int, optional
         Number of iterations. The default is 100.
@@ -68,7 +68,7 @@ def proximal_gradient(grad_f, g, theta0, gamma=1., lambda_=1., niter=100, prox_g
 
     Returns
     -------
-    theta : ndarray, shape (m+1, d)
+    theta : ndarray, shape (n+1, d)
         Value of theta at each iteration.
 
     '''
@@ -82,4 +82,58 @@ def proximal_gradient(grad_f, g, theta0, gamma=1., lambda_=1., niter=100, prox_g
         prox_g = lambda theta, gamma: prox(theta, gamma, g, method=method, grad_g=grad_g).x
     for n in tqdm(range(niter)):
         theta[n+1] = prox_g(theta[n]-gamma[n]*grad_f(theta[n]), lambda_[n]*gamma[n])
+    return theta
+
+def perturbed_proximal_gradient(grad_f, g, theta0, obs, m=500, gamma=1., lambda_=1., niter=100, prox_g=None, method='BFGS', grad_g=None):
+    '''
+    Perturbed proximal gradient algorithm.
+
+    Parameters
+    ----------
+    grad_f : callable
+        Method for estimating the gradient of f at a point, given observations
+        and a batch size.
+    g : callable
+        Method for computing g.
+    theta0 : float or ndarray, shape (d,)
+        Initial guess.
+    obs : ndarray
+        Observations used for the estimation of the gradient of f.
+    m : int or ndarray, shape (n,)
+        Batch size for the estimation of the gradient of f.
+    gamma : float or ndarray, shape (mn optional
+        Proximal step size. The default is 1..
+    lambda_ : float or ndarray, shape (n,), optional
+        Multiplicating factor applied to g.
+    niter : int, optional
+        Number of iterations. The default is 100.
+    prox_g : callable, optional
+        Proximal operator of g. If None, numerically computed. The default is
+        None.
+    method : str or callable, optional
+        Type of solver to numerically compute the proximal operator of g (see
+        scipy.optimize.minimize).
+        The default is 'BFGS'.
+    grad_g : callable, optional
+        Method for computing the gradient of g (in case prox_g not given). The
+        default is None.
+
+    Returns
+    -------
+    theta : ndarray, shape (n+1, d)
+        Value of theta at each iteration.
+
+    '''
+    theta = np.zeros(niter+1) if np.isscalar(theta0) else np.zeros((niter+1, theta0.shape[0]))
+    theta[0] = theta0
+    if np.isscalar(m):
+        m = np.ones(niter, dtype=int)*m
+    if np.isscalar(gamma):
+        gamma = np.ones(niter)*gamma
+    if np.isscalar(lambda_):
+        lambda_ = np.ones(niter)*lambda_
+    if prox_g is None:
+        prox_g = lambda theta, gamma: prox(theta, gamma, g, method=method, grad_g=grad_g).x
+    for n in tqdm(range(niter)):
+        theta[n+1] = prox_g(theta[n]-gamma[n]*grad_f(theta[n], obs, m[n]), lambda_[n]*gamma[n])
     return theta
