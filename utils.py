@@ -1,5 +1,7 @@
 import numpy as np
+from numba import njit
 
+@njit
 def mat2vec(mat):
     '''
     Transform a symmetric matrix into its vector representation.
@@ -17,13 +19,14 @@ def mat2vec(mat):
     '''
     p = mat.shape[0]
     n = p*(p+1)//2
-    vec = np.zeros(n)
+    vec = np.zeros(n, dtype=mat.dtype)
     counter = 0
     for k in range(p):
         vec[counter:counter+p-k] = mat[k, k:]
         counter += p-k
     return vec
 
+@njit
 def vec2mat(vec):
     '''
     Transform a vectorized symmetric matrix into its matrix form.
@@ -41,7 +44,7 @@ def vec2mat(vec):
     '''
     n = vec.shape[0]
     p = np.int(np.round((-1+np.sqrt(1.+8.*n))/2.))
-    mat = np.zeros((p, p))
+    mat = np.zeros((p, p), dtype=vec.dtype)
     counter = 0
     for k in range(p):
         mat[k, k:] = vec[counter:counter+p-k]
