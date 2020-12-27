@@ -1,15 +1,21 @@
+import argparse
 import numpy as np
+import pandas as pd
 from numba import njit
 from tqdm import tqdm
 from scipy.special import logsumexp
 
-from utils import vec2mat
-from prox_functions import prox_L1, proximal_gradient
+from utils import vec2mat, mat2vec
+from prox_functions import prox_L1, perturbed_proximal_gradient
+
+parser = argparse.ArgumentParser(description="Network structure estimation")
+parser.add_argument('--p', type=int, metavar='P', help="Dimension.")
+args = parser.parse_args()
 
 np.random.seed(1)
 
 M = 20 # number of possible states
-p = 50 # dimension
+p = args.p # dimension
 N = 250 # sample size
 
 # Generation of the true theta
@@ -22,6 +28,7 @@ for i in lines:
     sgn = np.random.randint(0, 2)*2-1
     theta_true[i, j] = sgn*(3.*u+1.) # uniform on [-4, -1] U [1, 4]
     theta_true[j, i] = theta_true[i, j]
+theta_true_vec = mat2vec(theta_true)
 
 @njit
 def B0(x):
@@ -65,30 +72,56 @@ def sampling(proba, u=np.random.rand()):
         s += proba[k]
     return k
 
-def Gibbsf(theta, niter=100, x0=np.zeros(p, dtype=int)):
+def Gibbsf(theta, niter=100, x0=np.zeros(p, dtype=int), verbose=True):
     ''' Gibbs sampler to sample from f '''
     x = x0.copy()
     u = np.random.rand(niter*p)
     chain = np.zeros((niter, p), dtype=int)
-    for it in tqdm(range(niter)):
+    for it in tqdm(range(niter), disable=not verbose):
         for i in range(p):
             proba = np.exp(logcondf(x, i, theta))
             x[i] = sampling(proba, u[it*p+i])
         chain[it] = x
     return chain
 
-# Generation of observations
+# Generate observations
 obs = Gibbsf(theta_true, niter=10+N)[10:]
 
+# Useful variables
+idv = mat2vec(np.eye(p, dtype=bool)) # indices of the diagonal of a vector
+eps = 1e-8
+
+# Parameters
 def grad_f(theta, obs, m=500, burn_in=10):
-    z = Gibbsf(theta, niter=burn_in+m)[burn_in:]
-    return np.mean([barB(xi) for xi in obs], axis=0)-np.mean([barB(zi) for zi in z], axis=0)
+    z = Gibbsf(vec2mat(theta), niter=burn_in+m, verbose=False)[burn_in:]
+    return mat2vec(np.mean([barB(xi) for xi in obs], axis=0)-np.mean([barB(zi) for zi in z], axis=0))
+g = lambda theta_vec: np.sum(np.abs(theta_vec))
+theta0 = np.zeros(p*(p+1)//2) # vector representation
 
-# g = lambda theta_vec: np.sum(np.abs(theta_vec))
-# theta0 = np.zeros(p*(p+1)//2) # vector representation
-# niter = 5*p
-# gamma = 25./(p*np.arange(1, niter+1)**0.7)
-# lambda_reg = 2.5*np.sqrt(np.log(p)/np.arange(1, niter+1))
+# Solver 2
+niter2 = 5*p
+m2 = 500+(np.arange(1, niter2+1)**1.2).round().astype(int)
+lambda_reg2 = 2.5*np.sqrt(np.log(p)/np.arange(1, niter2+1))
+gamma2 = 25./(p*np.sqrt(50))
+output2 = perturbed_proximal_gradient(grad_f, g, theta0, obs, m=m2, gamma=gamma2, lambda_=lambda_reg2, niter=niter2, prox_g=prox_L1)
 
-# output = proximal_gradient(grad_f, g, theta0, gamma=1., lambda_=lambda_reg, niter=niter, prox_g=prox_L1)
-# theta_est = vec2mat(output)
+df2 = pd.DataFrame(output2)
+df2['rel_err'] = np.linalg.norm(output2-output2[-1], axis=1)/np.linalg.norm(output2[-1])
+df2['sen'] = np.sum((np.abs(output2[:, ~idv]) > eps)*(np.abs(output2[-1, ~idv]) > eps), axis=1)/np.sum(np.abs(output2[:, ~idv]) > eps, axis=1)
+df2['prec'] = np.sum((np.abs(output2[:, ~idv]) > eps)*(np.abs(output2[-1, ~idv]) > eps), axis=1)/np.sum(np.abs(output2[-1, ~idv]) > eps)
+df2['F'] = 2*df2['sen']*df2['prec']/(df2['sen']+df2['prec'])
+df2.to_csv("NSE_Solver2.csv")
+
+# Solver 1
+m1 = 500
+niter1 = int(np.round(m2.sum()/m1))
+lambda_reg1 = 2.5*np.sqrt(np.log(p)/np.arange(1, niter1+1))
+gamma1 = 25./(p*np.arange(1, niter1+1)**0.7)
+output1 = perturbed_proximal_gradient(grad_f, g, theta0, obs, m=m1, gamma=gamma1, lambda_=lambda_reg1, niter=niter1, prox_g=prox_L1)
+
+df1 = pd.DataFrame(output1)
+df1['rel_err'] = np.linalg.norm(output1-output1[-1], axis=1)/np.linalg.norm(output1[-1])
+df1['sen'] = np.sum((np.abs(output1[:, ~idv]) > eps)*(np.abs(output1[-1, ~idv]) > eps), axis=1)/np.sum(np.abs(output1[:, ~idv]) > eps, axis=1)
+df1['prec'] = np.sum((np.abs(output1[:, ~idv]) > eps)*(np.abs(output1[-1, ~idv]) > eps), axis=1)/np.sum(np.abs(output1[-1, ~idv]) > eps)
+df1['F'] = 2*df1['sen']*df1['prec']/(df1['sen']+df1['prec'])
+df1.to_csv("NSE_Solver1.csv")
