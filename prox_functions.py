@@ -2,8 +2,24 @@ import numpy as np
 import scipy.optimize as opt
 from tqdm import tqdm
 
-# Proximal operator of the L1 norm
-prox_L1 = lambda theta, gamma: np.sign(theta)*np.maximum(np.abs(theta)-gamma, 0.)
+def prox_L1(theta, gamma):
+    '''
+    Proximal operator of the L1 norm.
+
+    Parameters
+    ----------
+    theta : ndarray, shape(d,)
+        Point where to compute the proximal operator.
+    gamma : float
+        Scaling parameter.
+
+    Returns
+    -------
+    ndarray, shape(d,)
+        The result of the proximal operator.
+
+    '''
+    return np.sign(theta)*np.maximum(np.abs(theta)-gamma, 0.)
 
 def prox(theta, gamma, g, t0=None, method='BFGS', grad_g=None):
     '''
