@@ -110,7 +110,7 @@ df2['rel_err'] = np.linalg.norm(output2-output2[-1], axis=1)/np.linalg.norm(outp
 df2['sen'] = np.sum((np.abs(output2[:, ~idv]) > eps)*(np.abs(output2[-1, ~idv]) > eps), axis=1)/np.sum(np.abs(output2[:, ~idv]) > eps, axis=1)
 df2['prec'] = np.sum((np.abs(output2[:, ~idv]) > eps)*(np.abs(output2[-1, ~idv]) > eps), axis=1)/np.sum(np.abs(output2[-1, ~idv]) > eps)
 df2['F'] = 2*df2['sen']*df2['prec']/(df2['sen']+df2['prec'])
-df2.to_csv("NSE_Solver2.csv")
+df2.to_csv("NSE_Solver2_p{}.csv".format(p))
 
 # Solver 1
 m1 = 500
@@ -124,4 +124,4 @@ df1['rel_err'] = np.linalg.norm(output1-output1[-1], axis=1)/np.linalg.norm(outp
 df1['sen'] = np.sum((np.abs(output1[:, ~idv]) > eps)*(np.abs(output1[-1, ~idv]) > eps), axis=1)/np.sum(np.abs(output1[:, ~idv]) > eps, axis=1)
 df1['prec'] = np.sum((np.abs(output1[:, ~idv]) > eps)*(np.abs(output1[-1, ~idv]) > eps), axis=1)/np.sum(np.abs(output1[-1, ~idv]) > eps)
 df1['F'] = 2*df1['sen']*df1['prec']/(df1['sen']+df1['prec'])
-df1.to_csv("NSE_Solver1.csv")
+df1.to_csv("NSE_Solver1_p{}.csv".format(p))
