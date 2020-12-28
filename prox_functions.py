@@ -100,7 +100,7 @@ def proximal_gradient(grad_f, g, theta0, gamma=1., lambda_=1., niter=100, prox_g
         theta[n+1] = prox_g(theta[n]-gamma[n]*grad_f(theta[n]), lambda_[n]*gamma[n])
     return theta
 
-def stochastic_proximal_gradient(grad_f, g, theta0, obs, m=500, gamma=1., lambda_=1., niter=100, prox_g=None, method='BFGS', grad_g=None):
+def stochastic_proximal_gradient(grad_f, x0, g, theta0, obs, m=500, gamma=1., lambda_=1., niter=100, prox_g=None, method='BFGS', grad_g=None):
     '''
     Perturbed proximal gradient algorithm.
 
@@ -110,6 +110,8 @@ def stochastic_proximal_gradient(grad_f, g, theta0, obs, m=500, gamma=1., lambda
         Method for estimating with MCMC the gradient of f at a point, given
         observations and a batch size. It should also return the last sample of
         the Markov chain.
+    x0 : ndarray
+        Starting point of the MCMC.
     g : callable
         Method for computing g.
     theta0 : float or ndarray, shape (d,)
@@ -143,7 +145,7 @@ def stochastic_proximal_gradient(grad_f, g, theta0, obs, m=500, gamma=1., lambda
     '''
     theta = np.zeros(niter+1) if np.isscalar(theta0) else np.zeros((niter+1, theta0.shape[0]))
     theta[0] = theta0
-    x = np.zeros_like(theta0)
+    x = x0.copy()
     if np.isscalar(m):
         m = np.ones(niter, dtype=int)*m
     if np.isscalar(gamma):

@@ -97,13 +97,14 @@ def grad_f(theta, obs, x0, m=500, burn_in=10):
     return mat2vec(np.mean([barB(xi) for xi in obs], axis=0)-np.mean([barB(zi) for zi in z], axis=0)), z[-1]
 g = lambda theta_vec: np.sum(np.abs(theta_vec))
 theta0 = np.zeros(p*(p+1)//2) # vector representation
+x0 = np.zeros(p, dtype=int)
 
 # Solver 2
 niter2 = 5*p
 m2 = 500+(np.arange(1, niter2+1)**1.2).round().astype(int)
 lambda_reg2 = 2.5*np.sqrt(np.log(p)/np.arange(1, niter2+1))
 gamma2 = 25./(p*np.sqrt(50))
-output2 = stochastic_proximal_gradient(grad_f, g, theta0, obs, m=m2, gamma=gamma2, lambda_=lambda_reg2, niter=niter2, prox_g=prox_L1)
+output2 = stochastic_proximal_gradient(grad_f, x0, g, theta0, obs, m=m2, gamma=gamma2, lambda_=lambda_reg2, niter=niter2, prox_g=prox_L1)
 
 df2 = pd.DataFrame(output2)
 df2['rel_err'] = np.linalg.norm(output2-output2[-1], axis=1)/np.linalg.norm(output2[-1])
@@ -117,7 +118,7 @@ m1 = 500
 niter1 = int(np.round(m2.sum()/m1))
 lambda_reg1 = 2.5*np.sqrt(np.log(p)/np.arange(1, niter1+1))
 gamma1 = 25./(p*np.arange(1, niter1+1)**0.7)
-output1 = stochastic_proximal_gradient(grad_f, g, theta0, obs, m=m1, gamma=gamma1, lambda_=lambda_reg1, niter=niter1, prox_g=prox_L1)
+output1 = stochastic_proximal_gradient(grad_f, x0, g, theta0, obs, m=m1, gamma=gamma1, lambda_=lambda_reg1, niter=niter1, prox_g=prox_L1)
 
 df1 = pd.DataFrame(output1)
 df1['rel_err'] = np.linalg.norm(output1-output1[-1], axis=1)/np.linalg.norm(output1[-1])
