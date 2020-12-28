@@ -92,8 +92,8 @@ idv = mat2vec(np.eye(p, dtype=bool)) # indices of the diagonal of a vector
 eps = 1e-8
 
 # Parameters
-def grad_f(theta, obs, x0, m=500, burn_in=10):
-    z = Gibbsf(vec2mat(theta), niter=burn_in+m, x0=x0, verbose=False)[burn_in:]
+def grad_f(theta, obs, x0, m=500):
+    z = Gibbsf(vec2mat(theta), niter=m, x0=x0, verbose=False)
     return mat2vec(np.mean([barB(xi) for xi in obs], axis=0)-np.mean([barB(zi) for zi in z], axis=0)), z[-1]
 g = lambda theta_vec: np.sum(np.abs(theta_vec))
 theta0 = np.zeros(p*(p+1)//2) # vector representation
