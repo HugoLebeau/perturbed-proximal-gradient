@@ -18,12 +18,13 @@ M = 20 # number of possible states
 p = args.p # dimension
 N = 250 # sample size
 
+below_diag = np.array([(i, j) for i in range(1, p) for j in range(i)]) # indices below diagonal
+
 # Generation of the true theta
 theta_true = np.zeros((p, p))
 nb_nonzero = np.int(np.round(np.random.randn()*(p/4.)+p)) # number of non-zero elements below the diagonal
-lines = np.random.randint(1, p, nb_nonzero)
-for i in lines:
-    j = np.random.randint(0, i)
+nonzero = below_diag[np.random.choice(p*(p-1)//2, size=nb_nonzero, replace=False)]
+for i, j in nonzero:
     u = np.random.rand()
     sgn = np.random.randint(0, 2)*2-1
     theta_true[i, j] = sgn*(3.*u+1.) # uniform on [-4, -1] U [1, 4]
@@ -90,7 +91,7 @@ obs = Gibbsf(theta_true, niter=100+N)[100:]
 
 # Useful variables
 idv = mat2vec(np.eye(p, dtype=bool)) # indices of the diagonal of a vector
-eps = 1e-8
+eps = 1e-8 # to compute sensitivity and precision
 
 # Parameters
 def grad_f(theta, obs, x0, m=500):
