@@ -71,16 +71,15 @@ if 5 in res.keys():
     obs = res[p]['obs']
     niter1 = res[p]['Solver1'].shape[0]-1
     niter2 = res[p]['Solver2'].shape[0]-1
-    lambda_reg1 = 2.5*np.sqrt(np.log(p)/N)
-    lambda_reg2 = 2.5*np.sqrt(np.log(p)/N)
+    lambda_reg = 2.5*np.sqrt(np.log(p)/N)
     Xp = np.array(list(itertools.product(range(M), repeat=p)))
     scal = lambda theta, x: np.sum(np.diag(theta)*x)+np.sum([theta[k, j]*np.float(x[k] == x[j]) for k in range(p) for j in range(k-1)])
     logZ = lambda theta: logsumexp([scal(theta, x) for x in Xp])
     ell = lambda theta: logsumexp([scal(theta, x) for x in obs])/obs.shape[0]-logZ(theta)
     g = lambda theta, lambda_reg: lambda_reg*np.sum([np.abs(theta[k, j]) for k in range(p) for j in range(k-1)])
     F = lambda theta, lambda_reg: -ell(theta)+g(theta, lambda_reg)
-    F1 = np.array([F(vec2mat(res[p]['Solver1'].iloc[i, :p*(p+1)//2].values), lambda_reg1) for i in range(niter1+1)])
-    F2 = np.array([F(vec2mat(res[p]['Solver2'].iloc[i, :p*(p+1)//2].values), lambda_reg2) for i in range(niter2+1)])
+    F1 = np.array([F(vec2mat(res[p]['Solver1'].iloc[i, :p*(p+1)//2].values), lambda_reg) for i in range(niter1+1)])
+    F2 = np.array([F(vec2mat(res[p]['Solver2'].iloc[i, :p*(p+1)//2].values), lambda_reg) for i in range(niter2+1)])
     valF = [F1, F2]
     for i, solver in enumerate(solvers):
         plt.plot(m[p][solver].cumsum(), valF[i], label=solver)
