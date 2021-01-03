@@ -67,7 +67,7 @@ def proximal_gradient(grad_f, g, theta0, gamma=1., lambda_=1., niter=100, prox_g
         Initial guess.
     gamma : float or ndarray, shape (n,), optional
         Proximal step size. The default is 1..
-    lambda_ : float or ndarray, shape (n,), optional
+    lambda_ : float, optional
         Multiplicating factor applied to g.
     niter : int, optional
         Number of iterations. The default is 100.
@@ -92,12 +92,10 @@ def proximal_gradient(grad_f, g, theta0, gamma=1., lambda_=1., niter=100, prox_g
     theta[0] = theta0
     if np.isscalar(gamma):
         gamma = np.ones(niter)*gamma
-    if np.isscalar(lambda_):
-        lambda_ = np.ones(niter)*lambda_
     if prox_g is None:
         prox_g = lambda theta, gamma: prox(theta, gamma, g, method=method, grad_g=grad_g).x
     for n in tqdm(range(niter)):
-        theta[n+1] = prox_g(theta[n]-gamma[n]*grad_f(theta[n]), lambda_[n]*gamma[n])
+        theta[n+1] = prox_g(theta[n]-gamma[n]*grad_f(theta[n]), lambda_*gamma[n])
     return theta
 
 def stochastic_proximal_gradient(grad_f, x0, g, theta0, obs, m=500, gamma=1., lambda_=1., niter=100, prox_g=None, method='BFGS', grad_g=None):
@@ -122,7 +120,7 @@ def stochastic_proximal_gradient(grad_f, x0, g, theta0, obs, m=500, gamma=1., la
         Batch size for the estimation of the gradient of f.
     gamma : float or ndarray, shape (mn optional
         Proximal step size. The default is 1..
-    lambda_ : float or ndarray, shape (n,), optional
+    lambda_ : float, optional
         Multiplicating factor applied to g.
     niter : int, optional
         Number of iterations. The default is 100.
@@ -150,11 +148,9 @@ def stochastic_proximal_gradient(grad_f, x0, g, theta0, obs, m=500, gamma=1., la
         m = np.ones(niter, dtype=int)*m
     if np.isscalar(gamma):
         gamma = np.ones(niter)*gamma
-    if np.isscalar(lambda_):
-        lambda_ = np.ones(niter)*lambda_
     if prox_g is None:
         prox_g = lambda theta, gamma: prox(theta, gamma, g, method=method, grad_g=grad_g).x
     for n in tqdm(range(niter)):
         nabla_f, x = grad_f(theta[n], obs, x, m[n])
-        theta[n+1] = prox_g(theta[n]-gamma[n]*nabla_f, lambda_[n]*gamma[n])
+        theta[n+1] = prox_g(theta[n]-gamma[n]*nabla_f, lambda_*gamma[n])
     return theta
