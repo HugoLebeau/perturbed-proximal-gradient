@@ -86,7 +86,7 @@ def Gibbsf(theta, niter=100, x0=np.zeros(p, dtype=int), verbose=True):
     return chain
 
 # Generate observations
-obs = Gibbsf(theta_true, niter=10+N)[10:]
+obs = Gibbsf(theta_true, niter=100+N)[100:]
 
 # Useful variables
 idv = mat2vec(np.eye(p, dtype=bool)) # indices of the diagonal of a vector
