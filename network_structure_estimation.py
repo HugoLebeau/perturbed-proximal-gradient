@@ -9,14 +9,16 @@ from utils import vec2mat, mat2vec
 from prox_functions import prox_L1, stochastic_proximal_gradient
 
 parser = argparse.ArgumentParser(description="Network structure estimation")
-parser.add_argument('--p', type=int, metavar='P', help="Dimension.")
+parser.add_argument('--M', type=int, default=20, metavar='M', help="Number of possible state (default: 20).")
+parser.add_argument('--p', type=int, metavar='p', help="Dimension.")
+parser.add_argument('--N', type=int, default=250, metavar='N', help="Sample size (default: 250).")
 args = parser.parse_args()
 
 np.random.seed(1)
 
-M = 20 # number of possible states
+M = args.M # number of possible states
 p = args.p # dimension
-N = 250 # sample size
+N = args.N # sample size
 
 below_diag = np.array([(i, j) for i in range(1, p) for j in range(i)]) # indices below diagonal
 
