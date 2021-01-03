@@ -12,7 +12,7 @@ parser = argparse.ArgumentParser(description="Network structure estimation")
 parser.add_argument('--M', type=int, default=20, metavar='M', help="Number of possible state (default: 20).")
 parser.add_argument('--p', type=int, metavar='p', help="Dimension.")
 parser.add_argument('--N', type=int, default=250, metavar='N', help="Sample size (default: 250).")
-parser.add_argumnet('--Niter', type=int, metavar='Niter', help='Number of iterations of Solver 2 (default: 5*p).')
+parser.add_argument('--Niter', type=int, metavar='Niter', help='Number of iterations of Solver 2 (default: 5*p).')
 args = parser.parse_args()
 
 np.random.seed(1)
