@@ -29,6 +29,7 @@ for i in lines:
     theta_true[i, j] = sgn*(3.*u+1.) # uniform on [-4, -1] U [1, 4]
     theta_true[j, i] = theta_true[i, j]
 theta_true_vec = mat2vec(theta_true)
+pd.DataFrame(theta_true).to_csv("NSE_theta_p{}.csv".format(p), header=False, index=False)
 
 @njit
 def B0(x):
