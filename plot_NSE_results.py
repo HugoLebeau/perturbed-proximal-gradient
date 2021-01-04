@@ -67,6 +67,7 @@ for i, p in enumerate(sorted(res.keys())):
 plt.show()
 
 if 5 in res.keys():
+    ''' The case p=5 should be computed with M=5. '''
     M, p, N = 5, 5, 250
     obs = res[p]['obs']
     niter1 = res[p]['Solver1'].shape[0]-1
