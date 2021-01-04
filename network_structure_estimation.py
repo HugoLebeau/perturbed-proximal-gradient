@@ -100,7 +100,7 @@ eps = 1e-8 # to compute sensitivity and precision
 # Parameters
 def grad_f(theta_vec, obs, x0, m=500):
     z = Gibbsf(vec2mat(theta_vec), niter=m, x0=x0, verbose=False)
-    return mat2vec(np.mean([barB(xi) for xi in obs], axis=0)-np.mean([barB(zi) for zi in z], axis=0)), z[-1]
+    return -mat2vec(np.mean([barB(xi) for xi in obs], axis=0)+np.mean([barB(zi) for zi in z], axis=0)), z[-1]
 g = lambda theta_vec: np.sum(np.abs(theta_vec))
 theta0 = np.zeros(p*(p+1)//2) # vector representation
 x0 = np.zeros(p, dtype=int)
