@@ -44,7 +44,7 @@ for i, p in enumerate(sorted(res.keys())):
     ax[i][1].set_title(r"$p = {}$".format(p))
 plt.show()
 
-norm = Normalize(vmin=-4., vmax=4., clip=False)
+norm = Normalize(vmin=-5., vmax=5., clip=False)
 fig, ax = plt.subplots(nrows=len(res.keys()), ncols=3, figsize=(15, 10))
 for i, p in enumerate(sorted(res.keys())):
     for j, solver in enumerate(solvers):
