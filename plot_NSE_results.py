@@ -28,7 +28,7 @@ for p in res.keys():
     m[p]['Solver2'] = np.concatenate(([0], 500+(np.arange(1, niter2+1)**1.2).round().astype(int)))
     m[p]['Solver1'] = np.concatenate(([0], np.ones(int(np.round(m[p]['Solver2'].sum()/500)), dtype=int)*500))
 
-fig, ax = plt.subplots(nrows=len(res.keys()), ncols=2, figsize=(15, 10))
+fig, ax = plt.subplots(nrows=len(res.keys()), ncols=2, figsize=(15, 10), squeeze=False)
 for i, p in enumerate(sorted(res.keys())):
     for solver in solvers:
         cum_m = m[p][solver].cumsum()
@@ -44,8 +44,8 @@ for i, p in enumerate(sorted(res.keys())):
     ax[i][1].set_title(r"$p = {}$".format(p))
 plt.show()
 
-norm = Normalize(vmin=-5., vmax=5., clip=False)
-fig, ax = plt.subplots(nrows=len(res.keys()), ncols=3, figsize=(15, 10))
+norm = Normalize(vmin=-4., vmax=4., clip=False)
+fig, ax = plt.subplots(nrows=len(res.keys()), ncols=3, figsize=(15, 10), squeeze=False)
 for i, p in enumerate(sorted(res.keys())):
     for j, solver in enumerate(solvers):
         mat = vec2mat(res[p][solver].iloc[-1, :p*(p+1)//2].values)
@@ -55,15 +55,15 @@ for i, p in enumerate(sorted(res.keys())):
     ax[i][0].set_title(r"True $\theta$   $p={}$".format(p))
 plt.show()
 
-fig, ax = plt.subplots(nrows=len(res.keys()), ncols=1, figsize=(15, 10))
+fig, ax = plt.subplots(nrows=len(res.keys()), ncols=1, figsize=(15, 10), squeeze=False)
 for i, p in enumerate(sorted(res.keys())):
     for solver in solvers:
         cum_m = m[p][solver].cumsum()
-        ax[i].plot(cum_m, res[p][solver].iloc[:, :p*(p+1)//2].apply(np.linalg.norm, axis=1), label=solver)
-    ax[i].legend()
-    ax[i].set_xlabel("MC samples")
-    ax[i].set_ylabel(r"$||\theta_n||$")
-    ax[i].set_title(r"$p = {}$".format(p))
+        ax[i][0].plot(cum_m, res[p][solver].iloc[:, :p*(p+1)//2].apply(np.linalg.norm, axis=1), label=solver)
+    ax[i][0].legend()
+    ax[i][0].set_xlabel("MC samples")
+    ax[i][0].set_ylabel(r"$||\theta_n||$")
+    ax[i][0].set_title(r"$p = {}$".format(p))
 plt.show()
 
 if 5 in res.keys():
